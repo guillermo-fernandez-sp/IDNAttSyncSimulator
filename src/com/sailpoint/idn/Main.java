@@ -125,8 +125,6 @@ public class Main {
             }
 
 
-            // System.out.println(Arrays.asList(srcHeaderMap));
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -178,7 +176,6 @@ public class Main {
                                         // Get key attribute from identity list file
                                         idi = dqstr[x];
                                         hidn.add(dqstr[x]);
-                                        //System.out.println("idi = " + idi);
                                         dqstr[x] = dqstr[x].replace(",", ";");
 
                                     }
