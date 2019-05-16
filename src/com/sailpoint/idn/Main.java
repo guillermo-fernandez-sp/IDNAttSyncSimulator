@@ -29,11 +29,11 @@ public class Main {
 
         String log4jConfPath = "log4j.properties";
         PropertyConfigurator.configure(log4jConfPath);
-        Logger logger = Logger.getLogger(util.class.getName());
+        Logger logger = Logger.getLogger(Util.class.getName());
         logger.info("Starting program...");
         System.out.println("Starting program...");
 
-        util u = new util();
+        Util u = new Util();
 
         File ifileIDN = new File(u.getPropertyValue("inputFileNameIDN"));
         File ifileSRC = new File(u.getPropertyValue("inputFileNameSRC"));

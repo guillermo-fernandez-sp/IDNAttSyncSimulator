@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class util {
+public class Util {
 
 
     public String getPropertyValue(String key) {
