@@ -58,17 +58,6 @@ public class Main {
             attMapList.add(u.getPropertyValue(attMap));
         }
 
-/*
-
-
-            for ( String values : attMapList){
-                System.out.println(values);
-            }
-
-
- */
-        //System.out.println(Arrays.asList(attMapList));
-
         // Check attributes against IDN Identity List and save column reference
 
         try {
@@ -77,7 +66,6 @@ public class Main {
 
             BufferedReader ini = new BufferedReader(new InputStreamReader(new FileInputStream(ifileIDN), StandardCharsets.UTF_8));
             String stri = ini.readLine();
-            //System.out.println(stri);
             String[] idnHeaderList = stri.split(",");
 
 
@@ -89,8 +77,6 @@ public class Main {
                 for (String hValue : idnHeaderList) {
 
                     if (hValue.equals(attSync)) {
-                        //System.out.println(attSync);
-                        //System.out.println(hValue);
                         idnHeaderMap.put(attSync, colNumber);
 
                     }
@@ -106,17 +92,12 @@ public class Main {
                 logger.info("IDN Identity list file seems correct. Building identity list object ...");
             }
 
-
-            //System.out.println(Arrays.asList(idnHeaderMap));
-
-
             // SRC input file validation
 
             BufferedReader ins = new BufferedReader(new InputStreamReader(new FileInputStream(ifileSRC), StandardCharsets.UTF_8));
             String strs = ins.readLine();
-            //System.out.println(strs);
-            String[] srcHeaderList = strs.split(",");
 
+            String[] srcHeaderList = strs.split(",");
 
             Map<String, Integer> srcHeaderMap = new HashMap<String, Integer>();
 
@@ -125,14 +106,12 @@ public class Main {
 
                 for (String hValue : srcHeaderList) {
 
-
                     if (hValue.toUpperCase().equals(attSync.toUpperCase())) {
 
                         srcHeaderMap.put(attSync, colNumber);
 
                     } else {
-                        //System.out.println(attSync);
-                        //System.out.println(hValue);
+
                     }
                     colNumber++;
 
@@ -150,144 +129,96 @@ public class Main {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*
-            Scanner scanner = new Scanner(ifileSRC);
-            scanner.useDelimiter(",");
-            while(scanner.hasNext()){
-                System.out.print(scanner.next()+"|");
-            }
-            scanner.close();
-*/
 
-
-            int lineNumber = 0;
-            int idnUsers = 0;
-            int srUsers = 0;
             boolean found;
             String ids = "";
-            HashSet hids = new HashSet();
+            HashSet adAccounts = new HashSet();
             HashSet hidn = new HashSet();
+            HashSet hids = new HashSet();
+
             try {
 
-
                 while ((strs = ins.readLine()) != null) {
-                    lineNumber++;
                     found = false;
-                    // Key attribute definition
-                    // case attKey = DN
 
-                    srUsers++;
+                    switch (u.getPropertyValue("attKey")) {
 
-                    if (u.getPropertyValue("attKey").equals("addistinguishedname")) {
+                        // AD Source - addistinguishedname: primary attribute
+                        case "addistinguishedname":
 
-                        String[] dqstri = strs.split("\"");
+                            String[] dqstri = strs.split("\"");
 
-                        for (int x = 0; x < dqstri.length && !found; x++) {
+                            for (int x = 0; x < dqstri.length && !found; x++) {
 
-                            if (dqstri[x].contains("CN=")) {
-
-                                found = true;
-
-                                // Get key attribute from source list file
-
-                                ids = dqstri[x];
-                                //System.out.println("ids = " + ids);
-                                //dqstri[x] = dqstri[x].replace(",", ";");
-
-                            }
-                        }
-
-                        //String vline = Arrays.toString(dqstri);
-                        //String[] mline = vline.split(",");
-
-                        found = false;
-
-                        String idi = "";
-
-
-                        ini = new BufferedReader(new InputStreamReader(new FileInputStream(ifileIDN), StandardCharsets.UTF_8));
-                        stri = ini.readLine();
-
-                        while ((stri = ini.readLine()) != null) {
-                            String[] dqstr = stri.split("\"");
-
-                            for (int x = 0; x < dqstr.length; x++) {
-                                if (dqstr[x].contains("CN=")) {
+                                if (dqstri[x].contains("CN=")) {
                                     found = true;
-                                    // Get key attribute from identity list file
-                                    idi = dqstr[x];
-                                    hidn.add(dqstr[x]);
-                                    //System.out.println("idi = " + idi);
-                                    //dqstr[x] = dqstr[x].replace(",", ";");
+                                    // Get key attribute from source list file
+                                    ids = dqstri[x];
+                                    hids.add(ids);
+                                    dqstri[x] = dqstri[x].replace(",", ";");
 
                                 }
                             }
 
-                            //String nline = Arrays.toString(dqstr);
-                            //System.out.println(Arrays.asList(nline));
-                            //String[] iline = nline.split(",");
-                            //System.out.println(Arrays.asList(iline));
+                            String vline = Arrays.toString(dqstri);
+                            String[] sline = vline.split(",");
 
-                            //System.out.println("idi = " + idi);
-                            //System.out.println(ids   + " = " + idi);
+                            found = false;
 
+                            String idi = "";
+                            ini = new BufferedReader(new InputStreamReader(new FileInputStream(ifileIDN), StandardCharsets.UTF_8));
+                            stri = ini.readLine();
 
-                            if (ids.equals(idi)) {
-                                hids.add(idi);
-                            }
+                            while ((stri = ini.readLine()) != null) {
+                                String[] dqstr = stri.split("\"");
 
+                                for (int x = 0; x < dqstr.length; x++) {
+                                    if (dqstr[x].contains("CN=")) {
+                                        found = true;
+                                        // Get key attribute from identity list file
+                                        idi = dqstr[x];
+                                        hidn.add(dqstr[x]);
+                                        //System.out.println("idi = " + idi);
+                                        dqstr[x] = dqstr[x].replace(",", ";");
 
-                        }
-                        ini.close();
+                                    }
+                                }
 
-                        /*
+                                String nline = Arrays.toString(dqstr);
+                                String[] iline = nline.split(",");
 
-                        System.out.println ("1" + u.getPropertyValue(u.getPropertyValue("attKey")));
-                        System.out.println ("2" +u.getPropertyValue("attKey"));
+                                if (ids.equals(idi)) {
+                                    if (!adAccounts.contains(ids)) {
+                                        adAccounts.add(ids);
+                                        System.out.println(Arrays.asList(sline));
 
+                                    }
 
-                        System.out.println ("3" +srcHeaderMap.get(u.getPropertyValue(u.getPropertyValue("attKey"))));
-                        System.out.println ("4" +iline[idnHeaderMap.get(u.getPropertyValue("attKey"))]);
+                                }
 
-
-
-
-/*
-                        //if(iline.length >= idnHeaderMap.get(u.getPropertyValue("attKey"))) {
-
-                            if (sline[srcHeaderMap.get(u.getPropertyValue(u.getPropertyValue("attKey")))]
-                                    .equals
-                                            (iline[idnHeaderMap.get(u.getPropertyValue("attKey"))])) {
-                                System.out.println("User found: " + sline[srcHeaderMap.get(u.getPropertyValue(u.getPropertyValue("attKey")))]);
-
-                                System.out.println("1 " + srcHeaderMap.get(u.getPropertyValue(u.getPropertyValue("attKey"))));
-                                System.out.println("2 " + idnHeaderMap.get(u.getPropertyValue("attKey")));
 
                             }
+                            ini.close();
 
 
-                        //}
-
-                         */
-
+                    }
                     }
 
 
-                }
 
             } catch (Exception e) {
                 logger.error("Error reading line");
                 e.printStackTrace();
             }
 
-            System.out.println("Total: " + lineNumber + " identities in " + u.getPropertyValue("source"));
-            logger.info("Total: " + lineNumber + " identities in " + u.getPropertyValue("source"));
+            System.out.println("Total: " + hids.size() + " identities in " + u.getPropertyValue("source"));
+            logger.info("Total: " + hids.size() + " identities in " + u.getPropertyValue("source"));
 
             System.out.println("Total: " + hidn.size() + " identities in IDN with attribute: " + u.getPropertyValue("attKey") + " provisioned");
             logger.info("Total: " + hidn.size() + " identities in IDN with attribute: " + u.getPropertyValue("attKey") + " provisioned");
 
-            System.out.println("Total: " + hids.size() + " matches");
-            logger.info("Total: " + hids.size() + " matches");
+            System.out.println("Total: " + adAccounts.size() + " matches");
+            logger.info("Total: " + adAccounts.size() + " matches");
 
             pw.close();
             ini.close();
@@ -306,80 +237,6 @@ public class Main {
             e.printStackTrace();
         }
 
-
-
-
-
-
-
-
-
-
-
-
-        /*
-        Iterator it = userMap.keySet().iterator();
-        while(it.hasNext()){
-            String key = (String) it.next();
-            System.out.println("key: " + key + " value: " + userMap.get(key));
-        }
-        */
-            /*
-
-            try {
-
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(
-                                new FileInputStream(ifile), StandardCharsets.UTF_8));
-
-                String str = in.readLine();
-
-                pw.writeNext(str.split(","));
-
-                System.out.println(str);
-                int lineNumber = 0;
-                String [] line = null;
-                try {
-
-
-                    while ((str = in.readLine()) != null) {
-                        String managerId = "";
-                        String managerName ="";
-                        line = str.split(",");
-
-                        managerName = userMap.get(managerId);
-
-                        line[3] = managerName;
-
-
-                        pw.writeNext(line);
-
-                        System.out.println(Arrays.toString(line));
-                        lineNumber++;
-                    }
-                }catch (Exception e){
-                    logger.error("Error reading line");
-                    e.printStackTrace();
-                }
-
-                logger.info("Total:" + lineNumber + " lines managed");
-                pw.close();
-                in.close();
-            } catch (UnsupportedEncodingException e) {
-                logger.error("Unable to read file");
-                logger.error(e.getMessage());
-                e.printStackTrace();
-            } catch (IOException e) {
-                logger.error("Unable to read file");
-                logger.error(e.getMessage());
-                e.printStackTrace();
-            } catch (Exception e) {
-                logger.error("Unable to read file");
-                logger.error(e.getMessage());
-                e.printStackTrace();
-            }
-
-            */
 
     }
 
