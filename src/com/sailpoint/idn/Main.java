@@ -74,8 +74,6 @@ public class Main {
                 int colNumber = 0;
 
                 for (String hValue : idnHeaderList) {
-                    //System.out.println(hValue);
-                    //System.out.println(attSync);
                     if (hValue.contains(attSync)) {
                         idnHeaderMap.put(attSync, colNumber);
 
@@ -85,7 +83,6 @@ public class Main {
                 }
             }
 
-            System.out.println(idnHeaderMap.toString());
 
             if (idnHeaderMap.size() != Integer.parseInt(u.getPropertyValue("attSize"))) {
                 logger.error("IDN Identity list file bad formed ");
@@ -119,7 +116,6 @@ public class Main {
                 }
             }
 
-            System.out.println(srcHeaderMap.toString());
 
             if (srcHeaderMap.size() != Integer.parseInt(u.getPropertyValue("attSize"))) {
                 logger.error("Source file bad formed ");
@@ -127,8 +123,6 @@ public class Main {
                 logger.info("Source file seems correct. Building identity list object ...");
             }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
             boolean found;
@@ -142,131 +136,107 @@ public class Main {
                 while ((strs = ins.readLine()) != null) {
                     found = false;
 
-                    switch (u.getPropertyValue("attKey")) {
+                    switch (u.getPropertyValue("source")) {
 
-                        // AD Source - addistinguishedname: primary attribute
-                        case "addistinguishedname":
+                        case "Active Directory":
 
-                            String[] dqstri = strs.split("\"");
+                            // Aply transform to multivalued attributes
+
+                            boolean in = false;
+                            StringBuilder strsb = new StringBuilder(strs);
+
+                            for (int z = 0; z < strsb.length(); z++) {
+                                if (strsb.charAt(z) == '\"' && !in) {
+                                    in = true;
+                                } else if (strsb.charAt(z) == '\"' && in) {
+                                    in = false;
+                                } else if (strsb.charAt(z) == ',' && in) {
+                                    strsb.setCharAt(z, ';');
+                                }
+                            }
+
+                            strs = strsb.toString().replaceAll("\"", "");
+
+                            String[] dqstri = strs.split(",");
                             List<Integer> dnRef = new ArrayList<Integer>();
-                            for (int x = 0; x < dqstri.length; x++) {
+                            for (int x = 0; x < dqstri.length && !found; x++) {
 
                                 if (dqstri[x].contains("CN=") && !found) {
-
-
                                     found = true;
                                     dnRef.add(x);
                                     // Get key attribute from source list file
                                     ids = dqstri[x];
                                     hids.add(ids);
-                                    dqstri[x] = dqstri[x].replace(",", ";");
-
-
-                                } else if (dqstri[x].contains("CN=")) {
-                                    dnRef.add(x);
-                                    dqstri[x] = dqstri[x].replace(",", ";");
 
                                 }
                             }
 
                             String vline = Arrays.toString(dqstri);
-                            String[] sline = vline.split(",");
-
-
-                            for (int i = 0; i < sline.length; i++) {
-                                if (sline[i].contains("CN=")) {
-                                    for (int j = i; j < sline.length - 1; j++) {
-                                        sline[j - 1] = sline[j];
-                                    }
-
-                                    for (int j = i; j < sline.length - 1; j++) {
-                                        sline[j] = sline[j + 1];
-                                    }
-
-                                    sline[sline.length - 1] = "";
-
-                                }
-                            }
-
-
-
+                            String[] sline = vline.split(",", -1);
                             found = false;
-
                             String idi = "";
                             ini = new BufferedReader(new InputStreamReader(new FileInputStream(ifileIDN), StandardCharsets.UTF_8));
                             stri = ini.readLine();
 
                             while ((stri = ini.readLine()) != null) {
-                                //stri= stri.replace("\"","");
-                                String[] dqstr = stri.split("\"");
+
+                                boolean is = false;
+                                StringBuilder strsi = new StringBuilder(stri);
+
+                                for (int z = 0; z < strsi.length(); z++) {
+                                    if (strsi.charAt(z) == '\"' && !is) {
+                                        is = true;
+                                    } else if (strsi.charAt(z) == '\"' && is) {
+                                        is = false;
+                                    } else if (strsi.charAt(z) == ',' && is) {
+                                        strsi.setCharAt(z, ';');
+                                    }
+                                }
+
+                                strs = strsi.toString().replaceAll("\"", "");
+
+                                String[] dqstr = strs.split(",", -1);
 
                                 for (int x = 0; x < dqstr.length; x++) {
                                     if (dqstr[x].contains("CN=")) {
                                         found = true;
-                                        // Get key attribute from identity list file
                                         idi = dqstr[x];
                                         hidn.add(dqstr[x]);
-                                        //dqstr[x] = dqstr[x].replace(",", ";");
+                                        break;
 
-
-                                    } else {
-                                        /*
-                                        System.out.println(dqstr[x]);
-                                        dqstr[x] = dqstr[x].replace(",", ";");
-                                        System.out.println(dqstr[x]);
-                                        */
                                     }
                                 }
-
-                                String nline = Arrays.toString(dqstr);
-                                String[] iline = nline.split(",");
-                                System.out.println(nline);
-
 
                                 if (ids.equals(idi)) {
 
                                     if (!adAccounts.contains(ids)) {
-                                        /*
-                                        System.out.println(ids);
-                                        System.out.println(idi);
-
-                                         */
                                         adAccounts.add(ids);
-                                        //System.out.println(Arrays.asList(sline));
                                         for (Map.Entry<String, Integer> entry : idnHeaderMap.entrySet()) {
-                                            //System.out.println(entry.getKey());
-                                            if (entry.getKey().equals("adaccountexpires")) {
 
-/*
-                                                System.out.println(Arrays.asList(iline));
-                                                System.out.println(Arrays.asList(sline));
-
-                                                System.out.println(entry.getValue() );
-                                                System.out.println(srcHeaderMap.get(u.getPropertyValue(entry.getKey()))  );
-
-
-
-
-                                                System.out.println(iline[entry.getValue() ] + " = " + sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))  ]);
-*/
-
+                                            if (dqstr[entry.getValue()].contains(" ")) {
+                                                dqstr[entry.getValue()] = dqstr[entry.getValue()].replaceAll(" ", "");
                                             }
-                                            //System.out.println(iline[entry.getValue() - 1] + " = " + sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey())) - 1]);
-
-                                            /*
-                                            if (!iline[entry.getValue() - 1]
-                                                    .equals
-                                                            (sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey())) - 1])){
-                                                //System.out.println(Arrays.asList(sline));
+                                            if (sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].equals(" ")) {
+                                                sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))] =
+                                                        sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].replace(" ", "");
                                             }
-                                            */
+
+
+                                            if (!dqstr[entry.getValue()].equals(sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))])) {
+                                                logger.info("--------------------------------------------");
+                                                logger.info("Attribute value missmatch ");
+                                                logger.info("Attribute Name: " + entry.getKey());
+                                                logger.info("Source: " + u.getPropertyValue("source"));
+                                                logger.info("Value in IdentityNow: " + dqstr[entry.getValue()]);
+                                                logger.info("Value in " + u.getPropertyValue("source") + ": " + sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))]);
+                                                logger.info("Identity DN: " + ids);
+                                            }
 
                                         }
 
                                     }
 
                                 }
-
 
                             }
                             ini.close();
