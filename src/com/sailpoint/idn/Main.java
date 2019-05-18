@@ -130,6 +130,7 @@ public class Main {
             HashSet adAccounts = new HashSet();
             HashSet hidn = new HashSet();
             HashSet hids = new HashSet();
+            int sycAttributes = 0;
 
             try {
 
@@ -213,16 +214,29 @@ public class Main {
                                         adAccounts.add(ids);
                                         for (Map.Entry<String, Integer> entry : idnHeaderMap.entrySet()) {
 
-                                            if (dqstr[entry.getValue()].contains(" ")) {
+                                            if (dqstr[entry.getValue()].equals(" ")) {
                                                 dqstr[entry.getValue()] = dqstr[entry.getValue()].replaceAll(" ", "");
+                                            } else if (dqstr[entry.getValue()].length() > 0 && dqstr[entry.getValue()].charAt(0) == ' ') {
+                                                dqstr[entry.getValue()] = dqstr[entry.getValue()].substring(0, 1) + dqstr[entry.getValue()].substring(1);
+
                                             }
                                             if (sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].equals(" ")) {
                                                 sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))] =
                                                         sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].replace(" ", "");
+                                            } else if (sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].length() > 0
+                                                    && sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].charAt(0) == ' ') {
+                                                //sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))] = sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].substring(0,1) +
+                                                //sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].substring(1,sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].length());
+
+                                                sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))] =
+                                                        sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].replaceFirst("\\s", "");
+
+
                                             }
 
 
                                             if (!dqstr[entry.getValue()].equals(sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))])) {
+                                                sycAttributes++;
                                                 logger.info("--------------------------------------------");
                                                 logger.info("Attribute value missmatch ");
                                                 logger.info("Attribute Name: " + entry.getKey());
@@ -252,14 +266,21 @@ public class Main {
                 e.printStackTrace();
             }
 
+            logger.info("--------------------------------------------");
+
             System.out.println("Total: " + hids.size() + " identities in " + u.getPropertyValue("source"));
             logger.info("Total: " + hids.size() + " identities in " + u.getPropertyValue("source"));
 
-            System.out.println("Total: " + hidn.size() + " identities in IDN with attribute: " + u.getPropertyValue("attKey") + " provisioned");
-            logger.info("Total: " + hidn.size() + " identities in IDN with attribute: " + u.getPropertyValue("attKey") + " provisioned");
+            System.out.println("Total: " + hidn.size() + " identities in IdentityNow with attribute: " + u.getPropertyValue("attKey") + " provisioned");
+            logger.info("Total: " + hidn.size() + " identities in IdentityNow with attribute: " + u.getPropertyValue("attKey") + " provisioned");
 
-            System.out.println("Total: " + adAccounts.size() + " matches");
-            logger.info("Total: " + adAccounts.size() + " matches");
+            System.out.println("Total: " + adAccounts.size() + " " + u.getPropertyValue("source") + " accounts found in IdentityNow");
+            logger.info("Total: " + adAccounts.size() + " " + u.getPropertyValue("source") + " accounts found in IdentityNow");
+
+            System.out.println("Total: " + sycAttributes + " attributes will be synchronized");
+            logger.info("Total: " + sycAttributes + " attributes will be synchronized");
+
+
 
             pw.close();
             ini.close();
