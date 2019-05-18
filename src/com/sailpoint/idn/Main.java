@@ -22,7 +22,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-
 public class Main {
 
     public static void main(String[] args) throws Exception {
@@ -30,100 +29,70 @@ public class Main {
         String log4jConfPath = "log4j.properties";
         PropertyConfigurator.configure(log4jConfPath);
         Logger logger = Logger.getLogger(Util.class.getName());
-        logger.info("Starting program...");
-        System.out.println("Starting program...");
-
         Util u = new Util();
-
         File ifileIDN = new File(u.getPropertyValue("inputFileNameIDN"));
         File ifileSRC = new File(u.getPropertyValue("inputFileNameSRC"));
         File ofile = new File(u.getPropertyValue("outputFileName"));
         java.io.FileWriter fw = new FileWriter(ofile);
         CSVWriter pw = new CSVWriter(fw, ',');
-
-
-        // Get attribute sync list
-
         List<String> attSyncList = new ArrayList<String>();
+        List<String> attMapList = new ArrayList<String>();
+
+        logger.info("Starting program...");
+        System.out.println("Starting program...");
 
         for (int i = 1; i <= Integer.parseInt(u.getPropertyValue("attSize")); i++) {
             attSyncList.add(u.getPropertyValue("att" + i));
         }
 
-        // Get attribute map list
-
-        List<String> attMapList = new ArrayList<String>();
-
         for (String attMap : attSyncList) {
             attMapList.add(u.getPropertyValue(attMap));
         }
 
-        // Check attributes against IDN Identity List and save column reference
-
         try {
-
-            // IDN input file validation
 
             BufferedReader ini = new BufferedReader(new InputStreamReader(new FileInputStream(ifileIDN), StandardCharsets.UTF_8));
             String stri = ini.readLine();
             String[] idnHeaderList = stri.split(",");
-
             Map<String, Integer> idnHeaderMap = new HashMap<String, Integer>();
 
             for (String attSync : attSyncList) {
                 int colNumber = 0;
-
                 for (String hValue : idnHeaderList) {
                     if (hValue.contains(attSync)) {
                         idnHeaderMap.put(attSync, colNumber);
 
                     }
                     colNumber++;
-
                 }
             }
 
-
             if (idnHeaderMap.size() != Integer.parseInt(u.getPropertyValue("attSize"))) {
-                logger.error("IDN Identity list file bad formed ");
+                logger.error("Cannot read " + u.getPropertyValue("inputFileNameIDN"));
             } else {
-                logger.info("IDN Identity list file seems correct. Building identity list object ...");
+                logger.info("IdentityNow file seems correct ...");
             }
-
-            // SRC input file validation
 
             BufferedReader ins = new BufferedReader(new InputStreamReader(new FileInputStream(ifileSRC), StandardCharsets.UTF_8));
             String strs = ins.readLine();
-
             String[] srcHeaderList = strs.split(",");
-
             Map<String, Integer> srcHeaderMap = new HashMap<String, Integer>();
 
             for (String attSync : attMapList) {
                 int colNumber = 0;
-
                 for (String hValue : srcHeaderList) {
-
                     if (hValue.toUpperCase().equals(attSync.toUpperCase())) {
-
                         srcHeaderMap.put(attSync, colNumber);
-
-                    } else {
-
                     }
                     colNumber++;
-
                 }
             }
 
-
             if (srcHeaderMap.size() != Integer.parseInt(u.getPropertyValue("attSize"))) {
-                logger.error("Source file bad formed ");
+                logger.error("Cannot read " + u.getPropertyValue("inputFileNameSRC"));
             } else {
-                logger.info("Source file seems correct. Building identity list object ...");
+                logger.info(u.getPropertyValue("source") + " accounts file seems correct ...");
             }
-
-
 
             boolean found;
             String ids = "";
@@ -143,9 +112,6 @@ public class Main {
                     switch (u.getPropertyValue("source")) {
 
                         case "Active Directory":
-
-                            // Aply transform to multivalued attributes
-
                             boolean in = false;
                             StringBuilder strsb = new StringBuilder(strs);
 
@@ -160,9 +126,9 @@ public class Main {
                             }
 
                             strs = strsb.toString().replaceAll("\"", "");
-
                             String[] dqstri = strs.split(",");
                             List<Integer> dnRef = new ArrayList<Integer>();
+
                             for (int x = 0; x < dqstri.length && !found; x++) {
 
                                 if (dqstri[x].contains("CN=") && !found) {
@@ -183,7 +149,6 @@ public class Main {
                             stri = ini.readLine();
 
                             while ((stri = ini.readLine()) != null) {
-
                                 boolean is = false;
                                 StringBuilder strsi = new StringBuilder(stri);
 
@@ -198,7 +163,6 @@ public class Main {
                                 }
 
                                 strs = strsi.toString().replaceAll("\"", "");
-
                                 String[] dqstr = strs.split(",", -1);
 
                                 for (int x = 0; x < dqstr.length; x++) {
@@ -210,13 +174,10 @@ public class Main {
 
                                     }
                                 }
-
                                 if (ids.equals(idi)) {
-
                                     if (!adAccounts.contains(ids)) {
                                         adAccounts.add(ids);
                                         for (Map.Entry<String, Integer> entry : idnHeaderMap.entrySet()) {
-
                                             if (dqstr[entry.getValue()].equals(" ")) {
                                                 dqstr[entry.getValue()] = dqstr[entry.getValue()].replaceAll(" ", "");
                                             } else if (dqstr[entry.getValue()].length() > 0 && dqstr[entry.getValue()].charAt(0) == ' ') {
@@ -234,8 +195,6 @@ public class Main {
 
 
                                             }
-
-
                                             if (!dqstr[entry.getValue()].equals(sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))])) {
                                                 sycAttributes++;
                                                 outputFileContent = ids.replaceAll(",", "") + "," + entry.getKey()
@@ -249,21 +208,13 @@ public class Main {
                                                 logger.debug("Value in " + u.getPropertyValue("source") + ": " + sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))]);
                                                 logger.debug("Identity DN: " + ids.replaceAll(";", ""));
                                             }
-
                                         }
-
                                     }
-
                                 }
-
                             }
                             ini.close();
-
-
                     }
-                    }
-
-
+                }
 
             } catch (Exception e) {
                 logger.error("Error reading line");
@@ -284,8 +235,6 @@ public class Main {
             System.out.println("Total: " + sycAttributes + " attributes will be synchronized");
             logger.info("Total: " + sycAttributes + " attributes will be synchronized");
 
-
-
             pw.close();
             ini.close();
             ins.close();
@@ -302,9 +251,5 @@ public class Main {
             logger.error(e.getMessage());
             e.printStackTrace();
         }
-
-
     }
-
-
 }
