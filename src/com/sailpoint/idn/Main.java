@@ -131,6 +131,9 @@ public class Main {
             HashSet hidn = new HashSet();
             HashSet hids = new HashSet();
             int sycAttributes = 0;
+            String outputFileHeader = "DN,AttributeName," + "IdentityNowValue," + u.getPropertyValue("source") + "Value";
+            pw.writeNext(outputFileHeader.split(","));
+            String outputFileContent = "";
 
             try {
 
@@ -235,13 +238,16 @@ public class Main {
 
                                             if (!dqstr[entry.getValue()].equals(sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))])) {
                                                 sycAttributes++;
+                                                outputFileContent = ids.replaceAll(",", "") + "," + entry.getKey()
+                                                        + "," + dqstr[entry.getValue()] + "," + sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))];
+                                                pw.writeNext(outputFileContent.split(","));
                                                 logger.info("--------------------------------------------");
                                                 logger.info("Attribute value mismatch");
                                                 logger.info("Attribute Name: " + entry.getKey());
                                                 logger.info("Source: " + u.getPropertyValue("source"));
                                                 logger.debug("Value in IdentityNow: " + dqstr[entry.getValue()]);
                                                 logger.debug("Value in " + u.getPropertyValue("source") + ": " + sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))]);
-                                                logger.debug("Identity DN: " + ids);
+                                                logger.debug("Identity DN: " + ids.replaceAll(";", ""));
                                             }
 
                                         }
