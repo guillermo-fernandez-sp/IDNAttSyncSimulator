@@ -225,8 +225,6 @@ public class Main {
                                                         sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].replace(" ", "");
                                             } else if (sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].length() > 0
                                                     && sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].charAt(0) == ' ') {
-                                                //sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))] = sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].substring(0,1) +
-                                                //sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].substring(1,sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].length());
 
                                                 sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))] =
                                                         sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))].replaceFirst("\\s", "");
@@ -238,12 +236,12 @@ public class Main {
                                             if (!dqstr[entry.getValue()].equals(sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))])) {
                                                 sycAttributes++;
                                                 logger.info("--------------------------------------------");
-                                                logger.info("Attribute value missmatch ");
+                                                logger.info("Attribute value mismatch");
                                                 logger.info("Attribute Name: " + entry.getKey());
                                                 logger.info("Source: " + u.getPropertyValue("source"));
-                                                logger.info("Value in IdentityNow: " + dqstr[entry.getValue()]);
-                                                logger.info("Value in " + u.getPropertyValue("source") + ": " + sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))]);
-                                                logger.info("Identity DN: " + ids);
+                                                logger.debug("Value in IdentityNow: " + dqstr[entry.getValue()]);
+                                                logger.debug("Value in " + u.getPropertyValue("source") + ": " + sline[srcHeaderMap.get(u.getPropertyValue(entry.getKey()))]);
+                                                logger.debug("Identity DN: " + ids);
                                             }
 
                                         }
